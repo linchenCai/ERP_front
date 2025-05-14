@@ -1,13 +1,13 @@
 <script setup>
 import AddCustomer from "@/views/AddCustomer.vue"
 import ListCustomer from "@/views/ListCustomer.vue";
-import {onMounted, ref} from "vue";
+import {markRaw, onMounted, ref, shallowRef} from "vue";
 import axios from "axios";
 
 //声明数组保存所有组件
-const views=[AddCustomer,ListCustomer]
+const views=[markRaw(AddCustomer),markRaw(ListCustomer)]
 //声明变量保存当前需要显示的组件名
-const currentComponent=ref(views[0]);
+const currentComponent=shallowRef(AddCustomer);
 const menus =ref([])
 
 /*menu组件选中叶子节点触发的函数，参数index：菜单节点的index值，对应数据库菜单节点的id*/
