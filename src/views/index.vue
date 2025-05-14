@@ -16,7 +16,7 @@ const  handlerSelect=function(index){
   axios.get("http://localhost:8080/compIndex?id="+index)
       .then((response)=>{
         console.log(response);
-        menus.value=views.value[response.data];
+        currentComponent.value=views[response.data];
       })
       .catch((error)=>{
         console.log(error);
