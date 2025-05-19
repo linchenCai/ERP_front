@@ -5,9 +5,11 @@ import {markRaw, onMounted, ref, shallowRef} from "vue";
 import axios from "axios";
 import AddSellJh from "@/views/AddSellJh.vue";
 import ListSellJh from "@/views/ListSellJh.vue";
+import ListCustOrder from "@/views/ListCustOrder.vue";
+import ListAfterSale from "@/views/ListAfterSale.vue";
 
 //声明数组保存所有组件
-const views=[markRaw(AddCustomer),markRaw(ListCustomer),,,markRaw(AddSellJh),,,ListSellJh]
+const views=[markRaw(AddCustomer),markRaw(ListCustomer),markRaw(ListAfterSale),markRaw(ListCustOrder),markRaw(AddSellJh),,,ListSellJh]
 //声明变量保存当前需要显示的组件名
 const currentComponent=shallowRef(AddCustomer);
 const menus =ref([])

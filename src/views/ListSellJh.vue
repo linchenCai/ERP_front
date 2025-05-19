@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, reactive, ref} from "vue";
 import axios from "axios";
+import {ElMessage} from "element-plus";
 //声明销售机会列表集合
 const sellJhList=ref([]);
 //声明total
@@ -73,6 +74,42 @@ function openSellDialog(row){
         console.log(error);
   })
 }
+//声明对象数组保存销售渠道选项
+const channelList=ref([{id:0,label:'自媒体'},
+  {id:1,label:'网络推广'},
+  {id:2,label:'老客户介绍'},
+  {id:3,label:'陌拜'},
+  {id:4,label:'二次客户'}]);
+//定义函数，发送ajax请求
+function subUpdateCustForm(){
+  axios.post("http://localhost:8080/updateSellJh",sellJhForm)
+      .then((response)=> {
+        if (response.data.code == 200) {
+          ElMessage(response.data.msg);
+          dialogSellVisible.value = false;
+          querySellJhList(1);
+        } else {
+          ElMessage(response.data.msg);
+        }
+      }).catch ((error)=>{
+          console.log(error);
+        });
+
+}
+//发送ajax请求删除客户销售信息
+function deleteSellJh(id){
+  axios.get("http://localhost:8080/delSellJh?id="+id)
+  .then((response)=>{
+    if(response.data.code==200){
+      ElMessage(response.data.msg);
+      querySellJhList(1);
+    }else{
+      ElMessage(response.data.msg);
+    }
+    }).catch((error)=>{
+      console.log(error);
+    });
+}
 </script>
 
 <template>
@@ -92,7 +129,7 @@ function openSellDialog(row){
 
     <el-table-column fixed="right" label="操作" width="120">
       <template #default="scope">
-        <el-button link type="primary" size="small" >删除
+        <el-button link type="primary" size="small" @click="deleteSellJh(scope.row.id)">删除
         </el-button>
         <el-button link type="primary" size="small" @click="openSellDialog(scope.row)">修改
         </el-button>
@@ -132,11 +169,10 @@ function openSellDialog(row){
     </el-form-item>
     <el-form-item label="销售渠道">
       <el-select v-model="sellJhForm.channelId " placeholder="请选择渠道..." style="width: 80%">
-        <el-option label="自媒体" value="0"></el-option>
-        <el-option label="网络推广" value="1"></el-option>
-        <el-option label="老客户介绍" value="2"></el-option>
-        <el-option label="陌拜" value="3"></el-option>
-        <el-option label="二次客户" value="4"></el-option>
+        <el-option v-for="opt in  channelList"
+                   :value="opt.id"
+                   :label="opt.label"
+                   :key="opt.id"></el-option>
       </el-select>
     </el-form-item>
     <el-form-item label="销售金额">
