@@ -7,7 +7,6 @@ import AddSellJh from "@/views/AddSellJh.vue";
 import ListSellJh from "@/views/ListSellJh.vue";
 import ListCustOrder from "@/views/ListCustOrder.vue";
 import ListAfterSale from "@/views/ListAfterSale.vue";
-import TreeDemo from "@/views/TreeDemo.vue";
 
 // 导入 Element Plus 图标 (你需要先安装: npm install @element-plus/icons-vue)
 import {
@@ -20,14 +19,35 @@ import {
   HomeFilled, // 示例图标
   Promotion, // 示例图标
   User, // 示例图标
-  List // 示例图标
+  List,// 示例图标
+  Search, Plus, Aim
 } from '@element-plus/icons-vue'
+import AddMenus from "@/views/AddMenus.vue";
 //声明数组保存所有组件
 const views=[markRaw(AddCustomer),markRaw(ListCustomer),markRaw(ListAfterSale),
-  markRaw(ListCustOrder),markRaw(AddSellJh),,,markRaw(ListSellJh),markRaw(TreeDemo)]
+  markRaw(ListCustOrder),markRaw(AddSellJh),,,markRaw(ListSellJh),markRaw(AddMenus)]
 //声明变量保存当前需要显示的组件名
 const currentComponent=shallowRef(AddCustomer);
 const menus =ref([])
+
+const isLoading = ref(false); // 用于加载状态
+
+// 为菜单项动态分配图标 (示例)
+// 实际应用中，后端返回的菜单数据最好能包含icon字段
+const getIconComponent = (menuId) => {
+  // 你可以根据 menu.id 或 menu.label 来决定使用哪个图标
+  // 这是一个简单的示例，你可以扩展它
+  const iconMap = {
+      '1': User,
+      '2': Plus,
+      '3': Search,
+      '4': Service,
+      '5':List,
+       '6':Aim,
+  };
+  // 作为一个通用后备图标
+  return iconMap[String(menuId)] || Setting;
+};
 
 /*menu组件选中叶子节点触发的函数，参数index：菜单节点的index值，对应数据库菜单节点的id*/
 const  handlerSelect=function(index){
@@ -56,36 +76,49 @@ onMounted(function (){
 })
 </script>
 <template>
-  <!-- 后台主页布局 -->
   <div class="common-layout">
-    <el-container>
+    <el-container class="full-height-container">
       <el-header class="app-header">
-        <span>ERP - ikun小组</span>
+        <div class="logo-title">
+          <el-icon :size="30" style="margin-right: 10px;"><HomeFilled /></el-icon> <!-- 你可以换成自己的Logo -->
+          <span>ERP - ikun小组</span>
+        </div>
+
       </el-header>
       <el-container class="main-content-container">
         <el-aside width="240px" class="app-aside">
           <div class="menu-title">系统菜单</div>
-
-          <!--添加Menu菜单组件-->
           <el-menu
-              class="el-menu-vertical-custom" @select="handlerSelect" >
-            <el-sub-menu v-for=" menu in menus" :index="String(menu.id)">
+              class="el-menu-vertical-custom"
+              @select="handlerSelect"
+              :default-openeds="menus.map(menu => String(menu.id))"
+              active-text-color="#409EFF"
+              background-color="#ffffff"
+              text-color="#303133"
+          >
+            <el-sub-menu v-for="menu in menus" :key="menu.id" :index="String(menu.id)">
               <template #title>
+                <el-icon><component :is="getIconComponent(menu.id)" /></el-icon>
                 <span>{{ menu.label }}</span>
               </template>
-              <el-menu-item   v-for="subMenu in menu.subMenus" :index="String(subMenu.id)">
-                  {{subMenu.label}}
+              <el-menu-item
+                  v-for="subMenu in menu.subMenus"
+                  :key="subMenu.id"
+                  :index="String(subMenu.id)"
+              >
+                <el-icon><component :is="getIconComponent(subMenu.id)" /></el-icon>
+                <span>{{ subMenu.label }}</span>
               </el-menu-item>
             </el-sub-menu>
-
-
           </el-menu>
-
         </el-aside>
         <el-main class="app-main">
-          <!--通过点击左边菜单，动态显示不同组件 -->
-          <!--           <component :is="currentComponent"></component>-->
-          <component :is="currentComponent"></component>
+          <div v-if="isLoading" class="loading-placeholder">
+            <el-skeleton :rows="5" animated />
+          </div>
+          <div v-else>
+            <component :is="currentComponent"></component>
+          </div>
         </el-main>
       </el-container>
     </el-container>
@@ -131,13 +164,6 @@ onMounted(function (){
   align-items: center;
 }
 
-.header-actions {
-  display: flex;
-  align-items: center;
-  font-size: 14px;
-}
-
-
 /* 侧边栏 */
 .app-aside {
   background-color: #ffffff; /* 干净的白色背景 */
@@ -160,23 +186,12 @@ onMounted(function (){
   flex-grow: 1; /* 菜单占据剩余空间 */
 }
 
-.el-menu-vertical-custom .el-menu-item,
-.el-menu-vertical-custom .el-sub-menu__title {
+.el-menu-vertical-custom {
   height: 50px; /* 统一菜单项高度 */
   line-height: 50px;
 }
-.el-menu-vertical-custom .el-menu-item:hover,
-.el-menu-vertical-custom .el-sub-menu__title:hover {
+.el-menu-vertical-custom :hover {
   background-color: #ecf5ff !important; /* 悬停背景色 */
-}
-
-.el-menu-vertical-custom .el-menu-item.is-active {
-  background-color: #e6f7ff !important; /* 选中项背景色 */
-  color: #409EFF !important; /* 选中项文字颜色 */
-}
-
-.el-menu-vertical-custom .el-icon {
-  margin-right: 8px; /* 图标和文字间距 */
 }
 
 /* 主内容区域 */
