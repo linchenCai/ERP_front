@@ -98,7 +98,65 @@ function handleDelete(row) {
   });
 }
 
-
+////////////////////////////////////////////////////
+//授权
+const dialogRoleMenusVisible=ref(false);
+//tree控件参数配置
+const props2 = {
+  label: 'label',
+  children: 'subMenus',
+  id: 'id'
+};
+//定义授权树节点集合数据
+const treeNodeList2=ref([]);
+//定义树对象的引用
+const treeRef=ref(null);
+//声明变量保存角色id，在完成授权的时候使用
+var global_rid=0;
+//定义函数打开角色授权对话框
+function roleAndMenus(rid){
+  global_rid=rid;
+  dialogRoleMenusVisible.value=true;
+  //发送ajax请求获得树节点数据
+  axios.get("http://localhost:8080/listMenus")
+      .then((response)=>{
+        treeNodeList2.value=response.data;
+        //发送ajax请求，根据角色id，获得所有该角色对应的菜单id
+        axios.get("http://localhost:8080/loadRoleMid/"+rid)
+            .then((response)=>{
+              //实现tree回显
+              treeRef.value.setCheckedKeys(response.data);
+            })
+            .catch((error)=>{
+              console.log(error);
+            })
+      })
+      .catch((error)=>{
+        console.log(error);
+      })
+}
+//定义实现角色菜单关闭保存的函数
+function saveRoleMenus(){
+  //获得tree控件中被选中的节点,包含父节点
+  var nodes=treeRef.value.getCheckedNodes(false,true);
+  //声明数组
+  var arr=[global_rid];
+  nodes.forEach((item)=>{
+  arr.push(item.id);
+  });
+  console.log(arr);
+  axios.post("http://localhost:8080/grantRoleMenus",arr)
+      .then((response)=>{
+        if(response.data.code==200){
+          //关闭对话框
+          dialogRoleMenusVisible.value=false;
+        }
+        ElMessage(response.data.msg);
+})
+  .catch((error)=>{
+    console.log(error);
+  })
+}
 </script>
 
 <template>
@@ -136,6 +194,8 @@ function handleDelete(row) {
         <!-- 新增：删除按钮 -->
         <el-button size="mini" type="danger" style="margin-left: 8px"
                    @click="handleDelete(scope.row)">删除</el-button>
+
+        <el-button @click="roleAndMenus(scope.row.id)">授权</el-button>
       </template>
     </el-table-column>
   </el-table>
@@ -167,6 +227,27 @@ function handleDelete(row) {
         <el-button>取消</el-button>
 </el-form-item>
     </el-form>
+  </el-dialog>
+<!--角色授权对话框-->
+  <el-dialog
+      v-model="dialogRoleMenusVisible"
+      width="50%">
+    <h2>
+      角色授权
+    </h2>
+<!--添加tree组件-->
+    <el-tree
+        ref="treeRef"
+        :data="treeNodeList2"
+        node-key="id"
+        default-expand-all
+        :props="props2"
+        show-checkbox
+    >
+    </el-tree>
+<!--    添加按钮组件-->
+    <el-button type="primary" @click="saveRoleMenus">保存权限</el-button>
+    <el-button >关闭授权</el-button>
   </el-dialog>
 </template>
 
