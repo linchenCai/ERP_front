@@ -24,9 +24,10 @@ import {
 } from '@element-plus/icons-vue'
 import AddMenus from "@/views/AddMenus.vue";
 import RolerManager from "@/views/RolerManager.vue";
+import UserManager from "@/views/UserManager.vue";
 //声明数组保存所有组件
 const views=[markRaw(AddCustomer),markRaw(ListCustomer),markRaw(ListAfterSale),
-  markRaw(ListCustOrder),markRaw(AddSellJh),,,markRaw(ListSellJh),markRaw(AddMenus),,markRaw(RolerManager)]
+  markRaw(ListCustOrder),markRaw(AddSellJh),,,markRaw(ListSellJh),markRaw(AddMenus),markRaw(UserManager),markRaw(RolerManager)]
 //声明变量保存当前需要显示的组件名
 const currentComponent=shallowRef(AddCustomer);
 const menus =ref([])
