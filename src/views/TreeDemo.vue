@@ -1,58 +1,54 @@
-<script setup >
-
-import {onMounted, reactive, ref} from "vue";
-import axios from "axios";
-const props={
-  id:'id',
-  label:'name',
-  children:'zones'
-};
-//定义tree控件上需要显示的节点数据
-const treeNodeList=ref([]);
-function hanldNodeClick(x){
-  console.log("--------------");
-  console.log(x);
-}
-const treeRef=ref(null);
-/*定义tree控件复选框选中状态发生变化的时候回调函数*/
-function hanldNodeChange(x,y,z){
-  let nodes = treeRef.value.getCheckedNodes(true);
-  console.log(nodes);
-  nodes.forEach((item)=>{ //item表单选中的节点对象
-
-    console.log(treeRef.value.getNode(item).parent);
-  })
-}
-//页面加载发送ajax请求
-onMounted(function(){
-  axios.get("http://localhost:8080/loadTree")
-      .then((response)=>{
-        treeNodeList.value=response.data;
-      })
-      .catch((error)=>{
-        console.log(error);
-      })
-});
-</script>
-
 <template>
-  <h2>tree</h2>
-  <!-- props:用来实现tree控件的配置，指定给tree控件提供数据的对象的key
-       data:提供tree控件节点数据，数据的定义需要符合props的配置
-       show-checkbox 是否选项否选框
-       node-key:需要唯一一般使用id
-    -->
-  <el-tree
-      :props="props"
-      :data="treeNodeList"
-      show-checkbox
-      node-key="id"
-      ref="treeRef"
-      @node-click="hanldNodeClick"
-      @check-change="hanldNodeChange"
-  />
+  <!-- div用来显示echarts控件的DOM容器 -->
+  <div ref="chartContainer" style="width: 100%; height: 400px;"></div>
 </template>
 
-<style scoped>
+<script setup>
+import * as echarts from 'echarts';
+import {onMounted, ref} from "vue";
+import axios from "axios";
+//声明dom容器的引用
+const chartContainer = ref(null);
 
-</style>
+//定义函数完成图表的渲染
+function countSellData() {
+  //创建echars对象
+  const myCharts = echarts.init(chartContainer.value);
+
+
+  //发送ajax请求，获得需要渲染的数据
+  axios.get("http://localhost:8080/countSell")
+      .then((response) => {
+
+        const option = {
+          xAxis: {
+            type: 'category',
+            data: response.data.xdata
+          },
+          yAxis: {
+            type: 'value'
+          },
+          series: [
+            {
+              data: response.data.ydata,
+              type: 'bar',
+              showBackground: true,
+              backgroundStyle: {
+                color: 'rgba(180, 180, 180, 0.2)'
+              }
+            }
+          ]
+        };
+        //渲染图表
+        myCharts.setOption(option);
+
+      })
+      .catch((error) => {
+        console.log(error)
+      });
+}
+
+onMounted(function () {
+  countSellData();
+});
+</script>
