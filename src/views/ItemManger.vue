@@ -1,7 +1,29 @@
 <template>
   <h2>商品信息</h2>
   <div style="text-align: left">
-    <el-button type="primary" @click="openItemDialog">添加商品</el-button>
+    <el-form :model="condForm" label-width="120px" :inline="true">
+      <el-form-item>
+        <el-button type="primary" @click="openItemDialog">添加商品</el-button>
+      </el-form-item>
+      <el-form-item label="编号"style="width: 20%">
+        <el-input v-model="condForm.itemNum" />
+      </el-form-item>
+      <el-form-item label="名称"style="width: 20%">
+        <el-input v-model="condForm.itemName" />
+      </el-form-item>
+      <el-form-item label="状态" style="width: 20%">
+        <el-select v-model="condForm.statue" >
+          <el-option label="上架" value="0" />
+          <el-option label="下架" value="1" />
+          <el-option label="删除" value="2" />
+        </el-select>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="queryCondItem">查询</el-button>
+        <!-- 新增的重置按钮 -->
+        <el-button type="info" @click="resetQuery">重置</el-button>
+      </el-form-item>
+    </el-form>
   </div>
   <!-- 添加商品信息的对话框 -->
   <el-dialog
@@ -22,7 +44,11 @@
 
         <template #file="{ file }">
           <div>
-            <img class="el-upload-list__item-thumbnail" :src="file.url" alt=""/>
+            <img class="el-upload-list__item-thumbnail"
+                 v-if="imgUrl"
+                 :src="imgUrl"
+                 alt=""
+                 style="width: 148px;height: 148px"/>
             <span class="el-upload-list__item-actions">
           <span
               class="el-upload-list__item-preview"
@@ -34,6 +60,7 @@
           </div>
         </template>
       </el-upload>
+      <el-image v-for="img in imageUrls" :src="img" style="width: 138px;height: 138px"></el-image>
     </div>
     <el-form :model="itemForm" label-width="120px" :inline="true">
 
@@ -41,7 +68,7 @@
         <el-input v-model="itemForm.itemName" />
       </el-form-item>
       <el-form-item label="编号">
-        <el-input v-model="itemForm.itemNumer" />
+        <el-input v-model="itemForm.itemNum" readonly/>
       </el-form-item>
       <el-form-item label="种类">
         <el-input v-model="itemForm.typeId" placeholder="请选择类型"
@@ -161,7 +188,7 @@
       <hr/>
       <el-form-item>
         <el-button type="primary" @click="saveItemForm">保存</el-button>
-        <el-button>清空</el-button>
+        <el-button @click="clearItemForm">清空</el-button>
       </el-form-item>
     </el-form>
 
@@ -189,22 +216,70 @@
     </el-tree>
     <el-button type="primary" @click="saveType">确认</el-button>
   </el-dialog>
+  <!-- 表格-->
+  <el-table :data="itemList" :border="parentBorder" style="width: 100%">
+  <el-table-column type="expand">
+    <template #default="props">
+      <div m="4">
+        <el-image :src="doImgs(props.row.imgs)" style="width: 200px;height: 100px"></el-image>
+
+        <el-table :data="[props.row]" :border="childBorder">
+          <el-table-column label="进价" prop="price" />
+          <el-table-column label="销售价" prop="sellPrice" />
+          <el-table-column label="会员价" prop="vipPrice" />
+          <el-table-column label="生成日期" prop="itemDate" />
+          <el-table-column label="过期日期" prop="endDate" />
+          <el-table-column label="状态">
+            <template #default="scope">
+              {{toStatue(scope.row.statue)}}
+            </template>
+          </el-table-column>
+          <el-table-column label="库存" prop="store" />
+        </el-table>
+      </div>
+    </template>
+  </el-table-column>
+    <el-table-column label="编号" prop="itemNum" />
+    <el-table-column label="名称" prop="itemName" />
+    <el-table-column label="品牌" prop="brandName" />
+    <el-table-column label="产地" prop="placeName" />
+
+    <el-table-column label="操作" fixed="right">
+      <template #default="scope">
+        <el-button type="primary" size="small" @click="editItem(scope.row)">修改</el-button>
+        <el-button type="primary" size="small" @click="downItem(scope.row.id)">下架</el-button>
+        <el-button type="primary" size="small" @click="delItem(scope.row.id)">删除</el-button>
+        <el-button type="primary" size="small" @click="handleDelete(scope.row)">采购</el-button>
+        <el-button type="primary" size="small" @click="handleDelete(scope.row)">出库</el-button>
+      </template>
+    </el-table-column>
+    <el-table-column label="单位" prop="unitName" />
+  </el-table>
+  <!-- 分页组件 -->
+  <el-pagination
+      small
+      background
+      :page-size="3"
+      :pager-count="10"
+      layout="prev, pager, next"
+      :total="total"
+      class="mt-4" @current-change="handlerPageChange"/>
 </template>
 
 <script setup>
 
-import {reactive, ref} from "vue";
+import {onMounted,reactive, ref} from "vue";
 import { Plus ,ZoomIn } from '@element-plus/icons-vue'
 import axios from "axios";
-import {ElMessage} from "element-plus";
+import {ElMessage, ElMessageBox} from "element-plus";
 
 
 //定义对话框状态
 const dialogItemVisible = ref(false);
-//声明表单
-const itemForm = reactive({
+// 定义表单的初始状态，方便重置
+const initialItemFormState = {
   id: '',
-  itemNumer:'',
+  itemNum:'',
   itemName:'',
   typeId:'',
   store:0,
@@ -215,17 +290,22 @@ const itemForm = reactive({
   unitId:'',
   price:'0.0',
   sellPrice:0.0,
-  vipPrice:'',
+  vipPrice:'0.0',
   itemDesc:'',
   itemDate:'',
   endDate: '',
   imgs:'',
   imgArr:[]
+};
 
-})
-
+//声明表单
+const itemForm = reactive({...initialItemFormState}); // 使用扩展运算符创建副本
+//声明变量保存处理添加和更新请求接口的url
+var url="";
 //定义函数打开添加商品对话框
 function openItemDialog() {
+  clearItemForm(); // 打开对话框时先清空一次表单
+  url="http://localhost:8080/addItem"; //处理新增请求的接口
   dialogItemVisible.value = true;
   //调用函数加载供应商列表
   loadSupplyList();
@@ -252,8 +332,11 @@ function handlePictureCardPreview(file){
 //定义图片上传成功后的回调函数
 function handleAvatarSuccess(path){
   console.log(path)
+  itemForm.imgArr=[]; //如果重新上传图片清空原来的值
   //将响应的图片路径保存表单的imgs数组中
   itemForm.imgArr.push(path);
+  //将原来回显的图片路径清空
+  imageUrls.value=null;
 }
 //声明供应商列表
 const supplyList=ref([]);
@@ -357,13 +440,33 @@ function saveType(){
 function getItemCode(){
   axios.get("http://localhost:8080/getCode")
       .then((response)=>{
-        itemForm.itemNumer=response.data;
+        itemForm. itemNum=response.data;
       })
       .catch((error)=>{
         console.log(error);
       })
 }
+const itemFormRef = ref(null); // 用于 el-form
 const uploadRef = ref();
+function clearItemForm() {
+  // 重置 itemForm 对象到初始状态
+  Object.assign(itemForm, initialItemFormState);
+  // 特别处理数组，确保它们被重置为空数组
+  // (对于 reactive 对象，直接赋值新数组 itemForm.imgArr = [] 也是可以的)
+  itemForm.imgArr = []; // 确保 imgArr 被清空
+
+  // 清空已上传的文件列表
+  if (uploadRef.value) {
+    uploadRef.value.clearFiles();
+  }
+
+  // 如果表单有验证规则，也需要重置验证状态
+  if (itemFormRef.value) {
+    itemFormRef.value.resetFields(); // 清除验证提示，并将表单项重置为初始值（如果定义了 prop）
+  }
+  // 如果希望每次清空后都获取新的商品编码，可以在这里调用
+  // getItemCode(); // 例如，如果编号是自动生成的
+}
 //发送请求提交form表单
 function saveItemForm(){
   //处理表单中的数组,将数组转化为字符，赋值给imgs
@@ -373,31 +476,160 @@ function saveItemForm(){
       .then((response)=>{
         if(response.data.code==200){
           dialogItemVisible.value=false; //关闭对话框
-          // 清空表单数据
-          for (let key in itemForm) {
-            if (Array.isArray(itemForm[key])) {
-              itemForm[key] = [];
-            } else if (typeof itemForm[key] === 'object') {
-              Object.assign(itemForm[key], {});
-            } else {
-              itemForm[key] = '';
-            }
-          }
-          itemForm.store = 0;
-          itemForm.price = '0.0';
-          itemForm.sellPrice = 0.0;
-          itemForm.vipPrice = '';
-          // 清空图片数组和上传控件
-          itemForm.imgArr = [];
-          if (uploadRef.value) {
-            uploadRef.value.clearFiles();
-          }
+          clearItemForm(); // 保存成功后也调用清空函数
+          queryItemList(1); // 建议: 保存成功后重新加载列表
         }
         ElMessage(response.data.msg);
       })
       .catch((error)=>{
         console.log(error);
       })
+}
+////////////////////////////////////////分页//////////////////////////////////
+const parentBorder = ref(false)
+const childBorder = ref(false)
+//声明商品列表集合
+const itemList=ref([]);
+//声明总记录数
+const total=ref(0);
+const currentPage=ref(1);
+//封装查询条件
+const condForm=reactive({
+  itemNum:'',
+  itemName:'',
+  statue:''
+});
+//定义函数发送请求加载商品列表
+function queryItemList(pageNum){
+  //axios.get("http://localhost:8080/itemList?pageNum="+pageNum)
+  condForm.pageNum=pageNum; //给封装查询条件的form表单对象中扩展属性值
+  axios.post("http://localhost:8080/itemList",condForm)
+      .then((response)=>{
+        itemList.value=response.data.items;
+        total.value=response.data.total;
+      })
+      .catch((error)=>{
+        console.log(error);
+      })
+}
+//定义函数处理图片路径
+function doImgs(path){
+
+  return (path+"").split(",")[0];
+
+}
+//转化商品状态
+function toStatue(statue){
+  switch (statue){
+    case 0:
+      return "上架";
+    case 1:
+      return "下架";
+    case 2:
+      return "删除";
+  }
+}
+//定义分页按钮回调函数
+function handlerPageChange(pageNum){
+  currentPage.value=pageNum;
+  queryItemList(pageNum);
+}
+//加载调用函数
+onMounted(function(){
+  queryItemList(1)
+})
+////////////////////////////定义form表单封装查询条件/////////////////////////
+function  queryCondItem(){
+  queryItemList(1);
+  currentPage.value=1;
+  //queryItemList()
+}
+//定义函数发生商品的下架请求
+function downItem(id){
+  axios.get("http://localhost:8080/downItem/"+id)
+      .then((response)=>{
+        if(response.data.code==200){
+          //刷新列表
+          queryItemList(1);
+        }
+        ElMessage(response.data.msg);
+      })
+      .catch((error)=>{
+        console.log(error);
+      })
+}
+//定义函数发生商品的删除请求
+function delItem(id){
+  ElMessageBox.confirm(
+    '确定要删除该商品吗？',
+    '提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  ).then(() => {
+    axios.get("http://localhost:8080/DelItem/"+id)
+      .then((response)=>{
+        if(response.data.code==200){
+          //刷新列表
+          queryItemList(1);
+        }
+        ElMessage(response.data.msg);
+      })
+      .catch((error)=>{
+        console.log(error);
+      })
+  }).catch(() => {
+    // 取消删除操作
+  });
+}
+// 定义函数重置查询条件
+function resetQuery() {
+  // 清空查询条件表单
+  condForm.itemNum = '';
+  condForm.itemName = '';
+  condForm.statue = '';
+
+  // 重新加载商品列表
+  queryItemList(1);
+}
+//声明集合保存需要回显的图片路径
+const imageUrls=ref([]);
+//打开商品信息回显对话框
+function editItem(row){
+  dialogItemVisible.value=true;
+  //调用函数加载供应商列表
+  loadSupplyList();
+  //加载商品产地选项
+  loadPlaceList();
+  //加载商品单位选项
+  queryUnitList();
+  //加载商品品牌选项
+  queryBrandList();
+  //加载仓库选项
+  queryStoreList();
+
+  //给imageUrls赋值
+  imageUrls.value=row.imgs.split(",");
+  //imgArr保存原始的图片路径，如果不修改图片，即不重新上传图片
+  itemForm.imgArr=row.imgs.split(",");
+  itemForm.id=row.id;
+  itemForm.itemNum=row.itemNum;
+  itemForm.itemName=row.itemName;
+  itemForm.typeId=row.typeId;
+  itemForm.placeId=row.placeId;
+  itemForm.brandId=row.brandId;
+  itemForm.supplyId=row.supplyId;
+  itemForm.storeId=row.storeId;
+  itemForm.itemDesc=row.itemDesc;
+  itemForm.itemDate=row.itemDate;
+  itemForm.endDate=row.endDate;
+  itemForm.price=row.price;
+  itemForm.store=row.store;
+  itemForm.sellPrice=row.sellPrice;
+  itemForm.vipPrice=row.vipPrice;
+  itemForm.unitId=row.unitId;
 }
 </script>
 
