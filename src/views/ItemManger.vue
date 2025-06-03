@@ -249,7 +249,7 @@
         <el-button type="primary" size="small" @click="editItem(scope.row)">修改</el-button>
         <el-button type="primary" size="small" @click="downItem(scope.row.id)">下架</el-button>
         <el-button type="primary" size="small" @click="delItem(scope.row.id)">删除</el-button>
-        <el-button type="primary" size="small" @click="handleDelete(scope.row)">采购</el-button>
+        <el-button type="primary" size="small" @click="openBuyDialog(scope.row.id)">采购</el-button>
         <el-button type="primary" size="small" @click="handleDelete(scope.row)">出库</el-button>
       </template>
     </el-table-column>
@@ -264,6 +264,42 @@
       layout="prev, pager, next"
       :total="total"
       class="mt-4" @current-change="handlerPageChange"/>
+  <!--商品采购对话框-->
+  <el-dialog
+      v-model="buyDialog"
+      width="60%">
+    <h2>商品采购</h2>
+
+    <el-form :model="buyForm" label-width="120px">
+      <el-form-item label="商品名称">
+         <el-input v-model="buyForm.itemName" style="width: 80%" readonly/>
+      </el-form-item>
+      <el-form-item label="仓库" >
+        <el-input v-model="buyForm.storeName" style="width: 80%" readonly/>
+      </el-form-item>
+      <el-form-item label="供应商">
+        <el-input v-model="buyForm.supplyName" style="width: 80%" readonly/>
+      </el-form-item>
+      <el-form-item label="产地">
+        <el-input v-model="buyForm.placeName" style="width: 80%" readonly/>
+      </el-form-item>
+      <el-form-item label="预计采购量">
+        <el-input v-model="buyForm.buyNum" style="width: 80%"/>
+      </el-form-item>
+      <el-form-item label="采购人">
+        <el-input v-model="buyForm.buyUser" style="width: 80%"/>
+      </el-form-item>
+
+      <el-form-item label="采购人电话">
+        <el-input v-model="buyForm.phone" style="width: 80%"/>
+      </el-form-item>
+
+      <el-form-item>
+        <el-button type="primary" @click="saveBuyOrder">保存</el-button>
+        <el-button>取消</el-button>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
 </template>
 
 <script setup>
@@ -630,6 +666,73 @@ function editItem(row){
   itemForm.sellPrice=row.sellPrice;
   itemForm.vipPrice=row.vipPrice;
   itemForm.unitId=row.unitId;
+}
+///////////////////////////////商品采购部分///////////////////////////////
+//声明商品采购表单
+const buyForm=reactive({
+  productId:'',
+  storeId:'',
+  supplyId:'',
+  placeId:'',
+  itemName:'',
+  storeName:'',
+  supplyName:'',
+  placeName:'',
+  buyNum:'',
+  buyUser:'',
+  phone:''
+})
+//声明变量控制对话框状态
+const buyDialog=ref(false);
+//定义函数打开采购对话框
+function openBuyDialog(id){
+  console.log("====="+id);
+  buyDialog.value=true;
+  //发送ajax请求，获得需要带入的数据
+  axios.get("http://localhost:8080/buyAutoInfo/"+id)
+      .then((response)=>{
+        //获得响应数据对象
+        var item=response.data;
+        //将响应数据赋值给buyForm表单
+        buyForm.productId=item.id;
+        buyForm.itemName=item.itemName;
+        buyForm.storeId=item.storeId;
+        buyForm.storeName=item.storeName;
+        buyForm.supplyId=item.supplyId;
+        buyForm.supplyName=item.supplyName;
+        buyForm.placeId=item.placeId;
+        buyForm.placeName=item.placeName;
+
+      })
+      .catch((error)=>{
+        console.log(error);
+      });
+}
+//定义函数发生保存采购单的请求
+function saveBuyOrder(){
+  axios.post("http://localhost:8080/saveBuyList",buyForm)
+      .then((response)=>{
+        if(response.data.code==200){
+          buyDialog.value=false;//关闭对话框
+          //清空buyForm表单
+          buyForm.productId='';
+          buyForm.itemName="";
+          buyForm.storeId='';
+          buyForm.storeName='';
+          buyForm.supplyId='';
+          buyForm.supplyName='';
+          buyForm.placeId='';
+          buyForm.placeName='';
+          buyForm.buyUser='';
+          buyForm.phone='';
+          buyForm.buyNum='';;
+
+        }
+        ElMessage(response.data.msg);
+      })
+      .catch((error)=>{
+        console.log(error);
+      })
 }
 </script>
 
