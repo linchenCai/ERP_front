@@ -29,11 +29,15 @@ import TreeDemo from "@/views/TreeDemo.vue";
 import CategoryManager from "@/views/CategoryManager.vue";
 import ItemManger from "@/views/ItemManger.vue";
 import BuyListManager from "@/views/BuyListManager.vue";
+import InStoreList from "@/views/InStoreList.vue";
+import ListOutStore from "@/views/ListOutStore.vue";
+import ListStore from "@/views/ListStore.vue";
 //声明数组保存所有组件
 const views=[markRaw(AddCustomer),markRaw(ListCustomer),markRaw(ListAfterSale),
   markRaw(ListCustOrder),markRaw(AddSellJh),,,markRaw(ListSellJh),markRaw(AddMenus),
   markRaw(UserManager),markRaw(RolerManager),markRaw(TreeDemo),markRaw(CategoryManager),
-  markRaw(AddMenus),markRaw(ItemManger),markRaw(BuyListManager)]
+  markRaw(AddMenus),markRaw(ItemManger),markRaw(BuyListManager),markRaw(InStoreList),markRaw(ListOutStore)
+,markRaw(ListStore)]
 //声明变量保存当前需要显示的组件名
 const currentComponent=shallowRef(AddCustomer);
 const menus =ref([])

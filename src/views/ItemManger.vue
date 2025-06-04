@@ -250,7 +250,7 @@
         <el-button type="primary" size="small" @click="downItem(scope.row.id)">下架</el-button>
         <el-button type="primary" size="small" @click="delItem(scope.row.id)">删除</el-button>
         <el-button type="primary" size="small" @click="openBuyDialog(scope.row.id)">采购</el-button>
-        <el-button type="primary" size="small" @click="handleDelete(scope.row)">出库</el-button>
+        <el-button type="primary" size="small" @click="openOutDialog(scope.row)">出库</el-button>
       </template>
     </el-table-column>
     <el-table-column label="单位" prop="unitName" />
@@ -296,10 +296,37 @@
 
       <el-form-item>
         <el-button type="primary" @click="saveBuyOrder">保存</el-button>
-        <el-button>取消</el-button>
+        <el-button @click="closeBuyDialog">取消</el-button>
       </el-form-item>
     </el-form>
   </el-dialog>
+  <!-- 出库对话框组件 -->
+  <el-dialog
+      v-model="itemOutDialog"
+      width="60%">
+    <h2>商品采购</h2>
+
+    <el-form :model="outForm" label-width="120px">
+      <el-form-item label="商品名称">
+        {{outForm.itemName}}
+      </el-form-item>
+      <el-form-item label="仓库">
+        {{outForm.storeName}}
+      </el-form-item>
+      <el-form-item label="商品库存">
+        {{outForm.store}}
+      </el-form-item>
+      <el-form-item label="出库数量">
+        <el-input v-model="outForm.outNum" style="width: 80%"/>
+      </el-form-item>
+
+      <el-form-item>
+        <el-button type="primary" @click="saveOutOrder">保存</el-button>
+        <el-button @click="closeOutDialog">取消</el-button>
+      </el-form-item>
+    </el-form>
+  </el-dialog>
+
 </template>
 
 <script setup>
@@ -312,6 +339,10 @@ import {ElMessage, ElMessageBox} from "element-plus";
 
 //定义对话框状态
 const dialogItemVisible = ref(false);
+function closeOutDialog() {
+  itemOutDialog.value = false;
+}
+
 // 定义表单的初始状态，方便重置
 const initialItemFormState = {
   id: '',
@@ -734,8 +765,40 @@ function saveBuyOrder(){
         console.log(error);
       })
 }
-</script>
+//声明出库对话框状态
+const itemOutDialog=ref(false);
+//声明商品出库form表单
+const outForm=reactive({
+  itemName:'',
+  storeName:'',
+  store:0,
+  outNum:0
+});
 
+//定义函数打开商品出库对话框
+function openOutDialog(row){
+  itemOutDialog.value=true;
+  //outForm表单赋值实现数据带入
+  outForm.itemName=row.itemName;
+  outForm.store=row.store;
+  outForm.storeName=row.storeName;
+  outForm.id=row.id;
+  outForm.productId = row.id;
+}
+//定义函数发生商品出库请求
+function saveOutOrder() {
+  axios.post("http://localhost:8080/doItemOutStore", outForm)
+      .then((response) => {
+        if (response.data.code == 200) {
+          itemOutDialog.value = false;
+        }
+        ElMessage(response.data.msg);
+      })
+      .catch((error) => {
+        console.log(error);
+      })
+}
+</script>
 <style scoped>
 .avatar-uploader .avatar {
   width: 178px;
