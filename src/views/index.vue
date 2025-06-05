@@ -32,12 +32,15 @@ import BuyListManager from "@/views/BuyListManager.vue";
 import InStoreList from "@/views/InStoreList.vue";
 import ListOutStore from "@/views/ListOutStore.vue";
 import ListStore from "@/views/ListStore.vue";
+import CustomerArea from "@/views/CustomerArea.vue";
+import YearMonthCount from "@/views/YearMonthCount.vue";
+import EmployeeCount from "@/views/EmployeeCount.vue";
 //声明数组保存所有组件
 const views=[markRaw(AddCustomer),markRaw(ListCustomer),markRaw(ListAfterSale),
-  markRaw(ListCustOrder),markRaw(AddSellJh),,,markRaw(ListSellJh),markRaw(AddMenus),
+  markRaw(ListCustOrder),markRaw(AddSellJh),markRaw(CustomerArea),markRaw(YearMonthCount),markRaw(ListSellJh),markRaw(AddMenus),
   markRaw(UserManager),markRaw(RolerManager),markRaw(TreeDemo),markRaw(CategoryManager),
   markRaw(AddMenus),markRaw(ItemManger),markRaw(BuyListManager),markRaw(InStoreList),markRaw(ListOutStore)
-,markRaw(ListStore)]
+,markRaw(ListStore),markRaw(EmployeeCount)]
 //声明变量保存当前需要显示的组件名
 const currentComponent=shallowRef(AddCustomer);
 const menus =ref([])
@@ -193,18 +196,14 @@ onMounted(function (){
   text-align: left;
 }
 
-.el-menu-vertical-custom {
-  border-right: none; /* 移除 el-menu 自带的右边框，因为 el-aside 已经有了 */
-  flex-grow: 1; /* 菜单占据剩余空间 */
-}
-
-.el-menu-vertical-custom {
-  height: 50px; /* 统一菜单项高度 */
+/*.el-menu-vertical-custom .el-menu-item,
+.el-menu-vertical-custom .el-sub-menu__title {
+  height: 50px;
   line-height: 50px;
 }
 .el-menu-vertical-custom :hover {
-  background-color: #ecf5ff !important; /* 悬停背景色 */
-}
+  background-color: #ecf5ff !important; !* 悬停背景色 *!
+}*/
 
 /* 主内容区域 */
 .app-main {
