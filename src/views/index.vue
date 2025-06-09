@@ -35,12 +35,14 @@ import ListStore from "@/views/ListStore.vue";
 import CustomerArea from "@/views/CustomerArea.vue";
 import YearMonthCount from "@/views/YearMonthCount.vue";
 import EmployeeCount from "@/views/EmployeeCount.vue";
+import AfterSaleCount from "@/views/AfterSaleCount.vue";
+import YearNumCount from "@/views/YearNumCount.vue";
 //声明数组保存所有组件
 const views=[markRaw(AddCustomer),markRaw(ListCustomer),markRaw(ListAfterSale),
   markRaw(ListCustOrder),markRaw(AddSellJh),markRaw(CustomerArea),markRaw(YearMonthCount),markRaw(ListSellJh),markRaw(AddMenus),
   markRaw(UserManager),markRaw(RolerManager),markRaw(TreeDemo),markRaw(CategoryManager),
   markRaw(AddMenus),markRaw(ItemManger),markRaw(BuyListManager),markRaw(InStoreList),markRaw(ListOutStore)
-,markRaw(ListStore),markRaw(EmployeeCount)]
+,markRaw(ListStore),markRaw(EmployeeCount),markRaw(AfterSaleCount),markRaw(YearNumCount)]
 //声明变量保存当前需要显示的组件名
 const currentComponent=shallowRef(AddCustomer);
 const menus =ref([])
