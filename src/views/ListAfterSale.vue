@@ -1,7 +1,8 @@
 <script setup >
 //定义封装查询条件的表单对象
 import {onMounted, reactive, ref} from "vue";
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 import {ElMessage} from "element-plus";
 //数据库总记录数
 const total=ref(0)

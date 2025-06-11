@@ -23,7 +23,8 @@
 <script setup>
 
 import {onMounted, reactive, ref} from "vue";
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 import * as echarts from "echarts";
 //声明表单数据
 const yearForm=reactive({

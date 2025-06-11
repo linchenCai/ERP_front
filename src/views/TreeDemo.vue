@@ -6,7 +6,8 @@
 <script setup>
 import * as echarts from 'echarts';
 import {onMounted, ref} from "vue";
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 //声明dom容器的引用
 const chartContainer = ref(null);
 

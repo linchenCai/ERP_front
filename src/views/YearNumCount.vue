@@ -22,7 +22,8 @@
 </template>
 
 <script setup>
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 import * as echars from 'echarts';
 import {onMounted, reactive, ref} from "vue";
 

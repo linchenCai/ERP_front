@@ -333,7 +333,8 @@
 
 import {onMounted,reactive, ref} from "vue";
 import { Plus ,ZoomIn } from '@element-plus/icons-vue'
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 import {ElMessage, ElMessageBox} from "element-plus";
 
 

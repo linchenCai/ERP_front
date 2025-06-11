@@ -2,7 +2,8 @@
 import AddCustomer from "@/views/AddCustomer.vue"
 import ListCustomer from "@/views/ListCustomer.vue";
 import {markRaw, onMounted, ref, shallowRef} from "vue";
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 import AddSellJh from "@/views/AddSellJh.vue";
 import ListSellJh from "@/views/ListSellJh.vue";
 import ListCustOrder from "@/views/ListCustOrder.vue";
@@ -81,7 +82,7 @@ const  handlerSelect=function(index){
   currentComponent.value=views[index];
 }
 onMounted(function (){
-  axios .get("http://localhost:8080/listMenus")
+  axios.get("http://localhost:8080/listMenus")
       .then((response)=>{
         console.log(response);
         menus.value=response.data;

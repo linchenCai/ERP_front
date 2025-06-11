@@ -1,6 +1,7 @@
 <script setup>
 import { reactive } from "vue";
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 import {ElMessage} from "element-plus";
 // 声明客户对象数据，实现表单的双向绑定
 const custForm = reactive({

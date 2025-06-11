@@ -63,7 +63,8 @@
 <script setup>
 //声明列表集合数据
 import {onMounted, reactive, ref} from "vue";
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 import {ElMessage, ElMessageBox} from "element-plus";
 
 //声明列表集合数据

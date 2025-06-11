@@ -7,7 +7,8 @@
 <script setup>
 import * as echarts from 'echarts';
 import {onMounted} from "vue";
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 
 //定义函数统计客户地区分布
 function countCustomerArea(){

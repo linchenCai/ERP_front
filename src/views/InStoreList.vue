@@ -34,7 +34,8 @@
 
 <script setup>
 //定义函数发生请求，加载入库单列表
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 import {onMounted, ref} from "vue";
 //声明列表集合
 const inStoreList=ref([]);

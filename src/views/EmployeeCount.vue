@@ -1,7 +1,8 @@
 <script setup >
 import * as echarts from 'echarts'
 import {onMounted} from "vue";
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 //定义函数发生请求，统计年龄分部
 function countEmpAge(){
   axios.get("http://localhost:8080/countEmpAge")

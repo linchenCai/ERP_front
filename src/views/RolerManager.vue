@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, reactive, ref} from "vue";
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 import {ElMessage, ElMessageBox} from "element-plus";
 //定义角色集合列表数据
 const rolerList=ref([]);

@@ -9,7 +9,8 @@
 //定义函数发生请求，加载投诉类型统计数据
 import * as echarts from "echarts";
 import {onMounted} from "vue";
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 
 function questionTypeCount(){
   axios.get("http://localhost:8080/countQuestionType")

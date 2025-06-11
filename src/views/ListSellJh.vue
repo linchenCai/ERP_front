@@ -1,6 +1,7 @@
 <script setup>
 import {onMounted, reactive, ref} from "vue";
-import axios from "axios";
+import { getCurrentInstance } from "vue";
+const axios = getCurrentInstance().proxy.axios;
 import {ElMessage} from "element-plus";
 //声明销售机会列表集合
 const sellJhList=ref([]);
