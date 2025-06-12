@@ -248,8 +248,7 @@ function saveRoleMenus(){
     </el-tree>
 <!--    添加按钮组件-->
     <el-button type="primary" @click="saveRoleMenus">保存权限</el-button>
-    <el-button >关闭授权</el-button>
-  </el-dialog>
+    <el-button @click="dialogRoleMenusVisible = false">关闭授权</el-button>  </el-dialog>
 </template>
 
 <style scoped>
